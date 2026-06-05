@@ -1,7 +1,7 @@
 const COMMON_RECIPIENTS = [
   { name: "Susie Xu", email: "susie.xu@eastspring.com" },
   { name: "Frances Cao", email: "frances.cao@eastspring.com" },
-  { name: "Yvonne Sin", email: "yvonne.sin@eastspring.com" },
+  { name: "Yvonne Sun", email: "yvonne.sun@eastspring.com" },
   { name: "Vicky Deng", email: "vicky.deng@eastspring.com" },
 ];
 

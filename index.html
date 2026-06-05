@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Excel 任务筛选（GitHub Pages）</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <section class="hero">
+        <div>
+          <p class="eyebrow">Excel Automation Web</p>
+          <h1>上传 Excel · 筛选 · 草拟邮件</h1>
+          <p class="subtitle">纯前端版本，可直接部署到 GitHub Pages。Excel 在浏览器本地解析，不会上传到服务器。</p>
+        </div>
+      </section>
+
+      <section class="panel upload-panel">
+        <div class="panel-header">
+          <div>
+            <h2>上传 Excel</h2>
+            <p id="fileNameText">尚未选择文件</p>
+          </div>
+        </div>
+        <label class="upload-zone" id="uploadZone">
+          <input id="uploadInput" type="file" accept=".xlsx,.xls" hidden />
+          <strong>点击或拖拽 .xlsx 文件到这里</strong>
+          <span>文件仅在本地浏览器中读取，不会上传到任何服务器。</span>
+        </label>
+      </section>
+
+      <section class="toolbar">
+        <label>
+          工作表
+          <select id="sheetSelect"></select>
+        </label>
+        <label class="search-box">
+          全局搜索
+          <input id="globalSearchInput" type="search" placeholder="搜索所有列..." />
+        </label>
+      </section>
+
+      <section class="panel quick-panel">
+        <div class="panel-header">
+          <div>
+            <h2>快捷筛选</h2>
+            <p>常用 Deadline 规则，一键应用。</p>
+          </div>
+        </div>
+        <div class="quick-actions">
+          <label>
+            Deadline 不晚于
+            <input id="deadlineBeforeInput" type="date" />
+          </label>
+          <button id="applyDeadlineBeforeButton" class="secondary-button" type="button">应用「某日期之前」</button>
+          <button id="applyInProgressButton" class="secondary-button" type="button">仅 In Progress</button>
+          <button id="applyPendingButton" class="secondary-button" type="button">仅待办</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>按列筛选</h2>
+            <p id="summaryText">请上传 .xlsx 文件开始筛选。</p>
+          </div>
+          <button id="clearFiltersButton" class="secondary-button" type="button">清空筛选</button>
+        </div>
+        <div id="filters" class="filters"></div>
+      </section>
+
+      <section class="panel table-panel">
+        <div class="panel-header">
+          <div>
+            <h2>筛选结果</h2>
+            <p id="resultText">暂无数据</p>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table id="dataTable"></table>
+        </div>
+      </section>
+
+      <section class="panel email-panel">
+        <div class="panel-header">
+          <div>
+            <h2>邮件草拟</h2>
+            <p>GitHub Pages 版在浏览器本地草拟邮件，通过系统邮件客户端发送（不经过服务器 SMTP）。</p>
+          </div>
+          <button id="draftEmailButton" class="primary-button" type="button">根据筛选结果草拟邮件</button>
+        </div>
+
+        <div class="common-recipients">
+          <div class="common-recipients-header">
+            <span>常用收件人</span>
+            <button id="fillAllRecipientsButton" type="button" class="secondary-button">填入全部</button>
+          </div>
+          <div id="commonRecipients" class="recipient-chips"></div>
+        </div>
+
+        <div class="email-form">
+          <label>
+            收件人（多个用逗号分隔）
+            <input id="emailToInput" type="text" placeholder="name@company.com, teammate@company.com" />
+          </label>
+          <label>
+            称呼
+            <input id="recipientNameInput" type="text" value="Team" />
+          </label>
+          <label>
+            署名
+            <input id="senderNameInput" type="text" placeholder="Operations Team" />
+          </label>
+          <label class="full-width">
+            邮件导语（可选）
+            <input id="emailIntroInput" type="text" placeholder="简洁说明本次跟进背景..." />
+          </label>
+          <label class="full-width">
+            主题
+            <input id="emailSubjectInput" type="text" />
+          </label>
+          <label class="full-width">
+            正文预览（纯文本）
+            <textarea id="emailBodyInput" rows="14"></textarea>
+          </label>
+        </div>
+
+        <div class="email-actions">
+          <button id="copyEmailButton" class="secondary-button" type="button">复制邮件内容</button>
+          <button id="openMailButton" class="primary-button" type="button">用邮件客户端打开</button>
+        </div>
+        <p id="emailResultText" class="email-result"></p>
+      </section>
+    </main>
+
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
+    <script src="./filter-logic.js"></script>
+    <script src="./email-draft.js"></script>
+    <script src="./app.js"></script>
+  </body>
+</html>

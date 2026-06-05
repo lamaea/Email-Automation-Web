@@ -142,3 +142,20 @@ function buildMailtoLink({ to = [], subject = "", body = "" }) {
   const query = params.toString();
   return `mailto:${to.join(",")}${query ? `?${query}` : ""}`;
 }
+
+function buildGmailComposeLink({ to = [], subject = "", body = "" }) {
+  const params = new URLSearchParams({
+    view: "cm",
+    fs: "1",
+  });
+  if (to.length) {
+    params.set("to", to.join(","));
+  }
+  if (subject) {
+    params.set("su", subject);
+  }
+  if (body) {
+    params.set("body", body);
+  }
+  return `https://mail.google.com/mail/?${params.toString()}`;
+}

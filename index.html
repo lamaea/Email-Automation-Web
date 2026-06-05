@@ -86,7 +86,7 @@
         <div class="panel-header">
           <div>
             <h2>邮件草拟与发送</h2>
-            <p id="apiStatusText">正在检查发信 API...</p>
+            <p>无需 API：一键在 Gmail 网页里打开发送页面（使用你已登录的 Gmail 账号）。</p>
           </div>
           <button id="draftEmailButton" class="primary-button" type="button">根据筛选结果草拟邮件</button>
         </div>
@@ -97,18 +97,6 @@
             <button id="fillAllRecipientsButton" type="button" class="secondary-button">填入全部</button>
           </div>
           <div id="commonRecipients" class="recipient-chips"></div>
-        </div>
-
-        <div class="api-settings">
-          <label>
-            发信 API 地址
-            <input id="apiUrlInput" type="url" placeholder="https://your-api.onrender.com" />
-          </label>
-          <label>
-            API 口令
-            <input id="apiKeyInput" type="password" placeholder="与 Render 环境变量 SEND_API_KEY 一致" />
-          </label>
-          <button id="saveApiSettingsButton" type="button" class="secondary-button">保存 API 设置</button>
         </div>
 
         <div class="email-form">
@@ -139,18 +127,17 @@
         </div>
 
         <div class="email-actions">
+          <button id="openGmailButton" class="primary-button" type="button">在 Gmail 中打开并发送</button>
           <button id="copyEmailButton" class="secondary-button" type="button">复制邮件内容</button>
-          <button id="openMailButton" class="secondary-button" type="button">用邮件客户端打开</button>
-          <button id="sendEmailButton" class="primary-button" type="button">一键发送邮件</button>
+          <button id="openMailButton" class="secondary-button" type="button">用系统邮件客户端打开</button>
         </div>
         <p id="emailResultText" class="email-result"></p>
       </section>
     </main>
 
     <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
-    <script src="./config.js"></script>
     <script src="./filter-logic.js"></script>
     <script src="./email-draft.js"></script>
-    <script src="./app.js?v=4"></script>
+    <script src="./app.js?v=5"></script>
   </body>
 </html>

@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: email-automation-api
+    runtime: python
+    rootDir: api
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --bind 0.0.0.0:$PORT server:app
+    envVars:
+      - key: SMTP_HOST
+        value: smtp.gmail.com
+      - key: SMTP_PORT
+        value: 587
+      - key: SMTP_USE_TLS
+        value: true
+      - key: ALLOWED_ORIGINS
+        value: https://lamaea.github.io,http://127.0.0.1:8080,http://localhost:8080

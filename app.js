@@ -5,6 +5,9 @@ const state = {
   filterRules: [],
   globalSearch: "",
   lastRows: [],
+  lastDraftHtml: "",
+  apiConfigured: false,
+  apiKeyRequired: false,
 };
 
 const uploadInput = document.querySelector("#uploadInput");
@@ -33,6 +36,11 @@ const emailIntroInput = document.querySelector("#emailIntroInput");
 const emailSubjectInput = document.querySelector("#emailSubjectInput");
 const emailBodyInput = document.querySelector("#emailBodyInput");
 const emailResultText = document.querySelector("#emailResultText");
+const apiStatusText = document.querySelector("#apiStatusText");
+const apiUrlInput = document.querySelector("#apiUrlInput");
+const apiKeyInput = document.querySelector("#apiKeyInput");
+const saveApiSettingsButton = document.querySelector("#saveApiSettingsButton");
+const sendEmailButton = document.querySelector("#sendEmailButton");
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -41,6 +49,23 @@ function escapeHtml(value) {
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+}
+
+function getEmailApiUrl() {
+  return (localStorage.getItem("emailApiUrl") || APP_CONFIG.emailApiUrl || "").replace(/\/$/, "");
+}
+
+function getApiKey() {
+  return sessionStorage.getItem("sendApiKey") || "";
+}
+
+async function fetchJson(url, options = {}) {
+  const response = await fetch(url, options);
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.error || "请求失败");
+  }
+  return data;
 }
 
 function currentSheet() {
@@ -365,7 +390,86 @@ function draftEmail() {
   });
   emailSubjectInput.value = draft.subject;
   emailBodyInput.value = draft.text;
-  emailResultText.textContent = `已根据 ${state.lastRows.length} 条任务草拟邮件。可复制正文，或用系统邮件客户端打开。`;
+  state.lastDraftHtml = draft.html;
+  emailResultText.textContent = `已根据 ${state.lastRows.length} 条任务草拟邮件。可一键发送、复制，或用邮件客户端打开。`;
+}
+
+async function loadApiStatus() {
+  const apiUrl = getEmailApiUrl();
+  apiUrlInput.value = apiUrl;
+  apiKeyInput.value = getApiKey();
+
+  if (!apiUrl) {
+    apiStatusText.textContent = "请填写并保存发信 API 地址（Render 部署后获得）。";
+    return;
+  }
+
+  try {
+    const data = await fetchJson(`${apiUrl}/api/email/config`);
+    state.apiConfigured = data.configured;
+    state.apiKeyRequired = data.apiKeyRequired;
+    apiStatusText.textContent = data.configured
+      ? `发信 API 已就绪：${data.host}（${data.user}）${data.apiKeyRequired ? "，需要 API 口令" : ""}`
+      : "发信 API 已连接，但 SMTP 尚未在服务端配置。";
+  } catch (error) {
+    apiStatusText.innerHTML = `<span class="error">无法连接发信 API：${escapeHtml(error.message)}</span>`;
+  }
+}
+
+function saveApiSettings() {
+  const apiUrl = apiUrlInput.value.trim().replace(/\/$/, "");
+  localStorage.setItem("emailApiUrl", apiUrl);
+  sessionStorage.setItem("sendApiKey", apiKeyInput.value.trim());
+  APP_CONFIG.emailApiUrl = apiUrl;
+  loadApiStatus().catch((error) => {
+    apiStatusText.innerHTML = `<span class="error">${escapeHtml(error.message)}</span>`;
+  });
+  emailResultText.textContent = "API 设置已保存。";
+}
+
+async function sendEmail() {
+  const apiUrl = getEmailApiUrl();
+  if (!apiUrl) {
+    showEmailError("请先填写并保存发信 API 地址。");
+    return;
+  }
+  if (state.apiKeyRequired && !getApiKey()) {
+    showEmailError("请先填写 API 口令（与 Render 的 SEND_API_KEY 一致）。");
+    return;
+  }
+
+  const to = parseEmailList(emailToInput.value);
+  if (!to.length) {
+    showEmailError("请先选择或填写至少一个收件人。");
+    return;
+  }
+  if (!emailSubjectInput.value.trim() || !emailBodyInput.value.trim()) {
+    showEmailError("请先草拟邮件，或填写主题和正文。");
+    return;
+  }
+
+  emailResultText.textContent = "正在发送...";
+  const headers = { "Content-Type": "application/json" };
+  const apiKey = getApiKey();
+  if (apiKey) {
+    headers["X-API-Key"] = apiKey;
+  }
+
+  const response = await fetch(`${apiUrl}/api/email/send`, {
+    method: "POST",
+    headers,
+    body: JSON.stringify({
+      to,
+      subject: emailSubjectInput.value.trim(),
+      text: emailBodyInput.value.trim(),
+      html: state.lastDraftHtml || emailBodyInput.value.trim(),
+    }),
+  });
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.error || "发送失败");
+  }
+  emailResultText.textContent = data.message || "邮件已发送。";
 }
 
 async function copyEmail() {
@@ -487,6 +591,9 @@ emailToInput.addEventListener("input", renderCommonRecipients);
 draftEmailButton.addEventListener("click", draftEmail);
 copyEmailButton.addEventListener("click", () => copyEmail().catch((error) => showEmailError(error.message)));
 openMailButton.addEventListener("click", openMailClient);
+saveApiSettingsButton.addEventListener("click", saveApiSettings);
+sendEmailButton.addEventListener("click", () => sendEmail().catch((error) => showEmailError(error.message)));
 
 renderCommonRecipients();
 renderTable();
+loadApiStatus().catch(() => {});
